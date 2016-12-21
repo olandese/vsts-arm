@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentConfiguration": {
+      "type": "object"
+    },
+    "dependencies": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "webAppName": "[concat(parameters('environmentConfiguration').prefix,'-olandese-',parameters('environmentConfiguration').tags.env)]",
+    "serverFarmName": "[parameters('dependencies').serverFarm.name]",
+    "serverFarmResourceGroup": "[parameters('dependencies').serverFarm.resourceGroup]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('webAppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "app": "[parameters('environmentConfiguration').tags.app]",
+        "bu": "[parameters('environmentConfiguration').tags.bu]",
+        "env": "[parameters('environmentConfiguration').tags.env]"
+      },
+      "kind": "api",
+      "properties": {
+        "name": "[variables('webAppName')]",
+        "serverFarmId": "[resourceId(variables('serverFarmResourceGroup'), 'Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "siteConfig": {
+          "AlwaysOn": true
+        }
+      },
+      "resources": [
+        { // App Connection Strings
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "connectionstrings",
+          "dependsOn": [
+            "[variables('webAppName')]"
+          ],
+          "properties": {}
+        },
+        { // App Settings
+          "apiVersion": "2015-08-01",
+          "type": "Microsoft.Web/sites/config",
+          "name": "[concat(variables('webAppName'),'/appsettings')]",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', variables('webAppName'))]"
+          ],
+          "properties": {
+            "WEBSITE_TIME_ZONE": "W. Europe Standard Time", //Set the site timezone to Amsterdam
+            
+            "ApplicationInsights:InstrumentationKey": "[parameters('dependencies').applicationInsight.instrumentationKey]",
+
+            "AppSettings:BlobSasUriExpiration": "00:15:00",
+            "AppSettings:StorageAccountConnectionString" :"[parameters('dependencies').storageAccounts[0].connectionString]",
+            "AppSettings:ContainerName" : "cards"
+          }
+        }
+      ]
+    }
+  ]
+}

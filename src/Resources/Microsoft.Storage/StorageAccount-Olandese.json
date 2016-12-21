@@ -1,0 +1,44 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentConfiguration": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "storageAccountName": "[concat(parameters('environmentConfiguration').prefix,'olandese',parameters('environmentConfiguration').tags.env)]",
+    "endPoints": "[concat(';BlobEndpoint=https://',variables('storageAccountName'),'.blob.core.windows.net/;TableEndpoint=https://',variables('storageAccountName'),'.table.core.windows.net/;QueueEndpoint=https://',variables('storageAccountName'),'.queue.core.windows.net/;FileEndpoint=https://',variables('storageAccountName'),'.file.core.windows.net/')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-01-01",
+      "name": "[variables('storageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "app": "[parameters('environmentConfiguration').tags.app]",
+        "bu": "[parameters('environmentConfiguration').tags.bu]",
+        "env": "[parameters('environmentConfiguration').tags.env]"
+      },
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage"
+    }
+  ],
+  "outputs": {
+    "storageAccountConnectionString": {
+      "type": "string",
+      "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listKeys(variables('storageAccountName'), '2016-01-01').keys[0].value,variables('endPoints'))]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    },
+    "storageAccountKey": {
+      "type": "string",
+      "value": "[listKeys(variables('storageAccountName'), '2016-01-01').keys[0].value]"
+    }
+  }
+}

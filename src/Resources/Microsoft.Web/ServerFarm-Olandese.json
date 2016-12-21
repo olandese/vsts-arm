@@ -1,0 +1,39 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentConfiguration": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "hostingPlanName": "[concat(parameters('environmentConfiguration').prefix,'-farm-olandese-',parameters('environmentConfiguration').tags.env)]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "app": "[parameters('environmentConfiguration').tags.app]",
+        "bu": "[parameters('environmentConfiguration').tags.bu]",
+        "env": "[parameters('environmentConfiguration').tags.env]"
+      },
+      "sku": {
+        "name": "B1",
+        "tier": "Basic",
+        "capacity": 1
+      },
+      "properties": {
+        "name": "[variables('hostingPlanName')]"
+      }
+    }
+  ],
+  "outputs": {
+    "hostingPlanName": {
+      "type": "string",
+      "value": "[variables('hostingPlanName')]"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environmentConfiguration": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "applicationInsightsName": "[concat(parameters('environmentConfiguration').prefix,'-appinsight-olandese-',parameters('environmentConfiguration').tags.env)]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2014-04-01",
+            "name": "[variables('applicationInsightsName')]",
+            "type": "Microsoft.Insights/components",
+            "location": "West Europe",
+            "tags": {
+                "app": "[parameters('environmentConfiguration').tags.app]",
+                "bu": "[parameters('environmentConfiguration').tags.bu]",
+                "env": "[parameters('environmentConfiguration').tags.env]"
+            },
+            "kind": "Web",
+            "properties": {
+                "applicationId": "[variables('applicationInsightsName')]"
+            }
+        }
+    ],
+    "outputs": {
+        "applicationInsightsInstrumentationKey": {
+            "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2014-04-01').InstrumentationKey]",
+            "type": "string"
+        },
+        "applicationInsightsName": {
+            "type": "string",
+            "value": "[variables('applicationInsightsName')]"
+        }
+    }
+}
